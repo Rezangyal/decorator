@@ -261,6 +261,65 @@ def decorator(caller, _func=None):
         __wrapped__=caller)
 
 
+def decorator_apply(dec, func):
+    """
+    Decorate a function by preserving the signature even if dec
+    is not a signature-preserving decorator.
+    """
+    return decorator.FunctionMaker.create(
+        func, 'return decfunc(%(signature)s)',
+        dict(decfunc=dec(func)), __wrapped__=func)
+    
+def fix_wrapper_interface(reference_fun):
+    '''
+    fix the signature of a wrapper function
+    tipical usage:
+    
+    def decor(fun)
+        @fix_wrapper_interface(fun)
+        def wrapper(*args, **kwargs)
+            print ("fun called ...")
+            return fun(*args, **kwargs)
+    '''
+    def good_wrapper(wrapper):
+        return decorator.FunctionMaker.create(
+            reference_fun, 
+            'return decfunc(%(signature)s)',
+            dict(decfunc=wrapper), 
+            __wrapped__=reference_fun) 
+    return good_wrapper
+
+def fix_decorator_interface(deco):
+    '''
+    signature fixer for old school decorator
+    
+    usage:
+    
+    @fix_decorator_interface
+    def decor(fun)
+        def wrapper(*args, **kwargs)
+            print ("fun called ...")
+            return fun(*args, **kwargs)
+    
+    or 
+    
+    def decor(fun)       # old decorator, with bad behavior
+        def wrapper(*args, **kwargs)
+            print ("fun called ...")
+            return fun(*args, **kwargs)
+    decor = fix_decorator_interface(decor) 
+
+    '''
+    def good_decorator(fun):
+        wrapper = deco(fun)
+        return decorator.FunctionMaker.create(
+            fun, 
+            'return decfunc(%(signature)s)',
+            dict(decfunc=wrapper), 
+            __wrapped__ = fun)
+    return good_decorator
+
+
 # ####################### contextmanager ####################### #
 
 try:  # Python >= 3.2

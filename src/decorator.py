@@ -266,7 +266,7 @@ def decorator_apply(dec, func):
     Decorate a function by preserving the signature even if dec
     is not a signature-preserving decorator.
     """
-    return decorator.FunctionMaker.create(
+    return FunctionMaker.create(
         func, 'return decfunc(%(signature)s)',
         dict(decfunc=dec(func)), __wrapped__=func)
     
@@ -282,7 +282,7 @@ def fix_wrapper_interface(reference_fun):
             return fun(*args, **kwargs)
     '''
     def good_wrapper(wrapper):
-        return decorator.FunctionMaker.create(
+        return FunctionMaker.create(
             reference_fun, 
             'return decfunc(%(signature)s)',
             dict(decfunc=wrapper), 
@@ -312,7 +312,7 @@ def fix_decorator_interface(deco):
     '''
     def good_decorator(fun):
         wrapper = deco(fun)
-        return decorator.FunctionMaker.create(
+        return FunctionMaker.create(
             fun, 
             'return decfunc(%(signature)s)',
             dict(decfunc=wrapper), 
